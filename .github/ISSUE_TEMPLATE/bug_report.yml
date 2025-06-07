@@ -63,7 +63,7 @@ body:
     validations:
       required: true
 
-   - type: textarea
+  - type: textarea
     id: additional-context
     attributes:
       label: Additional Context
