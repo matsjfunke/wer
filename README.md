@@ -15,6 +15,24 @@ cargo install --path .
 
 ## Usage
 
+### Smart Path Resolution ✨
+
+`wer` automatically finds files and directories by name - no need to remember exact paths!
+
+```bash
+# Just type the filename - wer finds it automatically
+wer main.rs                 # Finds src/main.rs
+wer git.rs                  # Finds src/git.rs
+wer Cargo.toml             # Finds ./Cargo.toml
+
+# Works with directories too
+wer src/                   # Works from anywhere in the repository
+
+# For absolute paths, use full paths to skip search
+wer ~/Documents/file.txt   # Uses absolute path directly
+wer /full/path/to/file     # No search, direct access
+```
+
 ### Basic Usage
 
 ```bash
@@ -37,7 +55,7 @@ Show git blame with syntax highlighting for any file:
 
 ```bash
 # Show blame with full commit info and syntax highlighting
-wer -b src/main.rs
+wer -b main.rs              # Automatically finds src/main.rs
 # → 61fcdda (Mats Julius Fun - 07 Jun) |  1 | use anyhow::Result;
 # → 6b70ffb (Mats Julius Fun - 07 Jun) |  2 | use clap::Parser;
 ```
@@ -46,19 +64,19 @@ wer -b src/main.rs
 
 ```bash
 # Show only dates
-wer -d src/main.rs
+wer -d main.rs
 # → 07 Jun 2025
 
-wer -b -d src/main.rs  # Blame with dates only
+wer -b -d main.rs          # Blame with dates only
 # → 07 Jun |  1 | use anyhow::Result;
 # → 07 Jun |  2 | use clap::Parser;
 
 # Show commit messages on separate lines
-wer -m src/main.rs
+wer -m main.rs
 # → 61fcdda Mats Julius Funke - 07 Jun 2025
 #     Initial commit
 
-wer -b -m src/main.rs  # Blame with commit messages
+wer -b -m main.rs          # Blame with commit messages
 # → 61fcdda (Mats Julius Fun - 07 Jun) |  1 | use anyhow::Result;
 #     Initial commit
 ```
@@ -81,7 +99,7 @@ wer -l 5 src/
 
 ```bash
 # Disable colors and syntax highlighting
-wer --no-color -b src/main.rs
+wer --no-color -b main.rs
 ```
 
 ## All Flags
@@ -93,9 +111,12 @@ wer --no-color -b src/main.rs
 | `-m, --commit-message` | Show commit messages on next line                 |
 | `-l, --last N`         | Show last N contributors (normal mode only)       |
 | `--no-color`           | Disable colors and syntax highlighting            |
+| `-v, --version`        | Print version information                         |
+| `-h, --help`           | Show help information                             |
 
 ## Features
 
+- **Smart Path Resolution**: Automatically finds files and directories by name
 - **Syntax Highlighting**: Automatic language detection for 100+ file types in blame mode
 - **Smart Error Messages**: Helpful suggestions for common issues
 - **Git Integration**: Works with any git repository
