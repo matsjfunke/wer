@@ -31,7 +31,7 @@ fn run(cli: Cli) -> Result<()> {
     let output = if cli.blame {
         get_blame(&repo, &target_path, cli.no_color)?
     } else {
-        get_last_commit(&repo, &target_path)?
+        get_last_commit(&repo, &target_path, cli.no_color)?
     };
 
     println!("{}", output);

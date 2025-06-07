@@ -2,7 +2,7 @@ use anyhow::{Result, anyhow};
 use git2::Repository;
 use std::path::{Path, PathBuf};
 
-use crate::utils::{format_timestamp, format_timestamp_day_month};
+use crate::utils::{format_timestamp_day_month, format_timestamp_day_month_year};
 
 pub fn find_repository(path: &str) -> Result<Repository> {
     let path = Path::new(path);
@@ -109,7 +109,7 @@ pub fn get_blame(repo: &Repository, path: &str, no_color: bool) -> Result<String
     Ok(result)
 }
 
-pub fn get_last_commit(repo: &Repository, path: &str) -> Result<String> {
+pub fn get_last_commit(repo: &Repository, path: &str, no_color: bool) -> Result<String> {
     let mut revwalk = repo.revwalk()?;
     revwalk.push_head()?;
 
@@ -138,12 +138,27 @@ pub fn get_last_commit(repo: &Repository, path: &str) -> Result<String> {
             let name = author.name().unwrap_or("Unknown");
             let time = commit.time();
 
-            // Convert timestamp to date string (YYYY-MM-DD format)
-            let date = format_timestamp(time.seconds());
-
+            // Use short date format and get commit hash
+            let date = format_timestamp_day_month_year(time.seconds());
+            let commit_hash = commit_id.to_string().chars().take(7).collect::<String>();
             let message = commit.summary().unwrap_or("No message");
 
-            return Ok(format!("{} - {}: {}", name, date, message));
+            // ANSI color codes
+            let commit_color = if no_color { "" } else { "\x1b[33m" }; // Yellow for commit hash
+            let date_color = if no_color { "" } else { "\x1b[36m" };   // Cyan for date
+            let reset_color = if no_color { "" } else { "\x1b[0m" };   // Reset color
+
+            return Ok(format!(
+                "{}{}{} {} - {}{}{}: {}",
+                commit_color,
+                commit_hash,
+                reset_color,
+                name,
+                date_color,
+                date,
+                reset_color,
+                message
+            ));
         }
     }
 
