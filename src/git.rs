@@ -1,8 +1,8 @@
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use git2::Repository;
 use std::path::{Path, PathBuf};
 
-use crate::utils::format_timestamp;
+use crate::utils::{format_timestamp, format_timestamp_day_month};
 
 pub fn find_repository(path: &str) -> Result<Repository> {
     let path = Path::new(path);
@@ -30,7 +30,10 @@ pub fn get_blame(repo: &Repository, path: &str, no_color: bool) -> Result<String
     }
 
     if full_path.is_dir() {
-        return Err(anyhow!("Blame can only be used on files, not directories: {}", path));
+        return Err(anyhow!(
+            "Blame can only be used on files, not directories: {}",
+            path
+        ));
     }
 
     let relative_path = full_path
@@ -38,62 +41,66 @@ pub fn get_blame(repo: &Repository, path: &str, no_color: bool) -> Result<String
         .map_err(|_| anyhow!("Path is not within the repository"))?;
 
     // Get the blame for the file
-    let blame = repo.blame_file(relative_path, None)
+    let blame = repo
+        .blame_file(relative_path, None)
         .map_err(|e| anyhow!("Failed to get blame for file: {}", e))?;
 
     let mut result = String::new();
-    
+
     // Read the file content to display alongside blame
-    let file_content = std::fs::read_to_string(&full_path)
-        .map_err(|e| anyhow!("Failed to read file: {}", e))?;
-    
+    let file_content =
+        std::fs::read_to_string(&full_path).map_err(|e| anyhow!("Failed to read file: {}", e))?;
+
     let lines: Vec<&str> = file_content.lines().collect();
     let line_count = lines.len();
     let line_width = line_count.to_string().len();
-    
+
     for (line_num, line_content) in lines.iter().enumerate() {
         let hunk_result = blame.get_line(line_num + 1);
-        
+
         let (commit_hash, author_name, date) = if let Some(hunk) = hunk_result {
-            let commit = repo.find_commit(hunk.final_commit_id())
+            let commit = repo
+                .find_commit(hunk.final_commit_id())
                 .map_err(|e| anyhow!("Failed to find commit: {}", e))?;
-            
+
             let author = commit.author();
             let name = author.name().unwrap_or("Unknown");
             let time = commit.time();
-            let formatted_date = format_timestamp(time.seconds());
-            
+            let formatted_date = format_timestamp_day_month(time.seconds());
+
             (
-                hunk.final_commit_id().to_string().chars().take(8).collect::<String>(),
+                hunk.final_commit_id()
+                    .to_string()
+                    .chars()
+                    .take(7)
+                    .collect::<String>(),
                 name.chars().take(15).collect::<String>(),
-                formatted_date
+                formatted_date,
             )
         } else {
             // Fallback for lines without blame info
-            ("~~~~~~~~".to_string(), "Unknown".to_string(), "Unknown".to_string())
+            (
+                "~~~~~~~".to_string(),
+                "Unknown".to_string(),
+                "Unknown".to_string(),
+            )
         };
-        
+
         // ANSI color codes
         let commit_color = if no_color { "" } else { "\x1b[33m" }; // Yellow for commit hash
-        let author_color = if no_color { "" } else { "\x1b[32m" }; // Green for author
-        let date_color = if no_color { "" } else { "\x1b[36m" };   // Cyan for date
-        let line_color = if no_color { "" } else { "\x1b[34m" };   // Blue for line number
-        let reset_color = if no_color { "" } else { "\x1b[0m" };   // Reset color
-        
+        let date_color = if no_color { "" } else { "\x1b[36m" }; // Cyan for date
+        let reset_color = if no_color { "" } else { "\x1b[0m" }; // Reset color
+
         result.push_str(&format!(
-            "{}{:>8}{} ({}{:>15}{} {}{:>12}{}) {}{:>width$}{} │ {}\n",
+            "{}{:>7}{} ({:>15} - {}{:>6}{}) | {:>width$} | {}\n",
             commit_color,
             commit_hash,
             reset_color,
-            author_color,
             author_name,
-            reset_color,
             date_color,
             date,
             reset_color,
-            line_color,
             line_num + 1,
-            reset_color,
             line_content,
             width = line_width
         ));
@@ -186,4 +193,4 @@ fn tree_contains_path(tree: &git2::Tree, path: &Path) -> bool {
     }
 
     tree.get_path(path).is_ok()
-} 
+}
