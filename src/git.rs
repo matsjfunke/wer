@@ -12,7 +12,7 @@ pub fn find_repository(path: &str) -> Result<Repository> {
         .map_err(|_| anyhow!("Not a git repository (or any of the parent directories)"))
 }
 
-pub fn get_blame(repo: &Repository, path: &str) -> Result<String> {
+pub fn get_blame(repo: &Repository, path: &str, no_color: bool) -> Result<String> {
     // Convert path to relative path from repo root
     let repo_workdir = repo
         .workdir()
@@ -48,25 +48,54 @@ pub fn get_blame(repo: &Repository, path: &str) -> Result<String> {
         .map_err(|e| anyhow!("Failed to read file: {}", e))?;
     
     let lines: Vec<&str> = file_content.lines().collect();
+    let line_count = lines.len();
+    let line_width = line_count.to_string().len();
     
     for (line_num, line_content) in lines.iter().enumerate() {
-        let hunk = blame.get_line(line_num + 1)
-            .ok_or_else(|| anyhow!("Failed to get blame info for line {}", line_num + 1))?;
+        let hunk_result = blame.get_line(line_num + 1);
         
-        let commit = repo.find_commit(hunk.final_commit_id())
-            .map_err(|e| anyhow!("Failed to find commit: {}", e))?;
+        let (commit_hash, author_name, date) = if let Some(hunk) = hunk_result {
+            let commit = repo.find_commit(hunk.final_commit_id())
+                .map_err(|e| anyhow!("Failed to find commit: {}", e))?;
+            
+            let author = commit.author();
+            let name = author.name().unwrap_or("Unknown");
+            let time = commit.time();
+            let formatted_date = format_timestamp(time.seconds());
+            
+            (
+                hunk.final_commit_id().to_string().chars().take(8).collect::<String>(),
+                name.chars().take(15).collect::<String>(),
+                formatted_date
+            )
+        } else {
+            // Fallback for lines without blame info
+            ("~~~~~~~~".to_string(), "Unknown".to_string(), "Unknown".to_string())
+        };
         
-        let author = commit.author();
-        let name = author.name().unwrap_or("Unknown");
-        let time = commit.time();
-        let date = format_timestamp(time.seconds());
+        // ANSI color codes
+        let commit_color = if no_color { "" } else { "\x1b[33m" }; // Yellow for commit hash
+        let author_color = if no_color { "" } else { "\x1b[32m" }; // Green for author
+        let date_color = if no_color { "" } else { "\x1b[36m" };   // Cyan for date
+        let line_color = if no_color { "" } else { "\x1b[34m" };   // Blue for line number
+        let reset_color = if no_color { "" } else { "\x1b[0m" };   // Reset color
         
         result.push_str(&format!(
-            "{:>8} ({:>10} {:>12}) {}\n",
-            hunk.final_commit_id().to_string().chars().take(8).collect::<String>(),
-            name,
+            "{}{:>8}{} ({}{:>15}{} {}{:>12}{}) {}{:>width$}{} │ {}\n",
+            commit_color,
+            commit_hash,
+            reset_color,
+            author_color,
+            author_name,
+            reset_color,
+            date_color,
             date,
-            line_content
+            reset_color,
+            line_color,
+            line_num + 1,
+            reset_color,
+            line_content,
+            width = line_width
         ));
     }
 

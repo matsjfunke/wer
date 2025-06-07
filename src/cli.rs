@@ -10,4 +10,8 @@ pub struct Cli {
     /// Show git blame for the file (only works with files, not directories)
     #[arg(short = 'b', long = "blame")]
     pub blame: bool,
+    
+    /// Disable colored output
+    #[arg(long = "no-color")]
+    pub no_color: bool,
 } 

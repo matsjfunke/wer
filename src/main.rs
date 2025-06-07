@@ -29,7 +29,7 @@ fn run(cli: Cli) -> Result<()> {
 
     // Choose between blame and last commit based on the flag
     let output = if cli.blame {
-        get_blame(&repo, &target_path)?
+        get_blame(&repo, &target_path, cli.no_color)?
     } else {
         get_last_commit(&repo, &target_path)?
     };
