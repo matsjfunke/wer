@@ -63,13 +63,13 @@ wer -b -m src/main.rs  # Blame with commit messages
 #     Initial commit
 ```
 
-### Top Contributors
+### Last Contributors
 
 Find the last N unique people who touched a file or directory:
 
 ```bash
-# Show last 3 contributors
-wer --top 5 src/
+# Show last 5 contributors
+wer -l 5 src/
 # → a1b2c3d George Boole - 1854: feat: introduce Boolean algebra and logical foundations
 # → e4f5g6h Alan Turing - 30 Nov 1936: feat: develop theoretical computing foundations
 # → i7j8k9l Claude Shannon - Jul 1948: feat: establish information theory and digital communication
@@ -91,7 +91,7 @@ wer --no-color -b src/main.rs
 | `-b, --blame`          | Show git blame for files with syntax highlighting |
 | `-d, --date-only`      | Show dates only (mutually exclusive with -m)      |
 | `-m, --commit-message` | Show commit messages on next line                 |
-| `--top N`              | Show last N contributors (normal mode only)       |
+| `-l, --last N`         | Show last N contributors (normal mode only)       |
 | `--no-color`           | Disable colors and syntax highlighting            |
 
 ## Features
@@ -101,4 +101,4 @@ wer --no-color -b src/main.rs
 - **Git Integration**: Works with any git repository
 - **Multiple Display Modes**: Choose between full info, dates only, or commit messages
 - **Color Support**: Beautiful terminal colors with option to disable
-- **Top Contributors**: Find who has been working on specific files/directories
+- **Last Contributors**: Find who has been working on specific files/directories

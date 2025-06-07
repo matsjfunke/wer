@@ -243,7 +243,7 @@ pub fn get_blame(path: &str, no_color: bool, date_only: bool, commit_message: bo
     Ok(result)
 }
 
-pub fn get_last_commit(path: &str, no_color: bool, date_only: bool, commit_message: bool, top: Option<usize>) -> Result<String> {
+pub fn get_last_commit(path: &str, no_color: bool, date_only: bool, commit_message: bool, last: Option<usize>) -> Result<String> {
     // Validate path and get repository and relative path (no file requirement for last commit)
     let (repo, _, relative_path) = validate_git_path(path, false)?;
 
@@ -252,8 +252,8 @@ pub fn get_last_commit(path: &str, no_color: bool, date_only: bool, commit_messa
 
     let colors = ColorScheme::new(no_color);
 
-    // If top is requested, collect multiple contributors
-    if let Some(n) = top {
+    // If last is requested, collect multiple contributors
+    if let Some(n) = last {
         let mut contributors = Vec::new();
         let mut seen_authors = std::collections::HashSet::new();
 

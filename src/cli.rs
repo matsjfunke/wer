@@ -21,9 +21,13 @@ EXAMPLES:
   wer src/                    Show who last touched the src/ directory
   wer -b src/main.rs          Show git blame with syntax highlighting  
   wer -d .                    Show only the date of last change
-  wer --top 3 src/            Show last 3 contributors to src/ directory
+  wer -l 3 src/               Show last 3 contributors to src/ directory
   wer -b -m file.py           Show blame with commit messages"#)]
-
+#[command(arg(clap::Arg::new("version")
+    .short('v')
+    .long("version")
+    .action(clap::ArgAction::Version)
+    .help("Print version")))]
 pub struct Cli {
     /// File or directory path
     pub path: Option<String>,
@@ -42,18 +46,14 @@ pub struct Cli {
     #[arg(short = 'm', long = "commit-message")]
     pub commit_message: bool,
     
-    /// Show the most recent N contributors (regular mode only)
+    /// Show the last N unique contributors (regular mode only)
     ///
     /// Lists the most recent N unique people who modified the path, with an
     /// indication if fewer contributors exist than requested.
-    #[arg(long = "top", value_name = "N")]
-    pub top: Option<usize>,
+    #[arg(short = 'l', long = "last", value_name = "N")]
+    pub last: Option<usize>,
     
     /// Disable colored output and syntax highlighting
     #[arg(long = "no-color")]
     pub no_color: bool,
-    
-    /// Print version
-    #[arg(short = 'v', long = "version", action = clap::ArgAction::Version)]
-    pub version: bool,
 } 
