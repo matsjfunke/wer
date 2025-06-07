@@ -15,6 +15,10 @@ pub struct Cli {
     #[arg(short = 'd', long = "date-only")]
     pub date_only: bool,
     
+    /// Show commit message on the next line
+    #[arg(short = 'm', long = "commit-message")]
+    pub commit_message: bool,
+    
     /// Disable colored output / syntax highlighting
     #[arg(long = "no-color")]
     pub no_color: bool,

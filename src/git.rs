@@ -53,7 +53,7 @@ fn validate_git_path(path: &str, must_be_file: bool) -> Result<(Repository, Path
     Ok((repo, full_path, relative_path))
 }
 
-pub fn get_blame(path: &str, no_color: bool, date_only: bool) -> Result<String> {
+pub fn get_blame(path: &str, no_color: bool, date_only: bool, commit_message: bool) -> Result<String> {
     // Validate path and get repository, full path, and relative path
     let (repo, full_path, relative_path) = validate_git_path(path, true)?;
 
@@ -100,7 +100,53 @@ pub fn get_blame(path: &str, no_color: bool, date_only: bool) -> Result<String> 
             line_content.to_string()
         };
 
-        if date_only {
+        if commit_message {
+            // Full blame format with commit message on next line (no message on main line)
+            let (commit_hash, author_name, date, message) = if let Some(hunk) = &hunk_result {
+                let commit = repo
+                    .find_commit(hunk.final_commit_id())
+                    .map_err(|e| anyhow!("Failed to find commit: {}", e))?;
+
+                let author = commit.author();
+                let name = author.name().unwrap_or("Unknown");
+                let time = commit.time();
+                let formatted_date = format_timestamp_day_month(time.seconds());
+                let msg = commit.summary().unwrap_or("No message");
+
+                (
+                    hunk.final_commit_id()
+                        .to_string()
+                        .chars()
+                        .take(7)
+                        .collect::<String>(),
+                    name.chars().take(15).collect::<String>(),
+                    formatted_date,
+                    msg.to_string(),
+                )
+            } else {
+                ("~~~~~~~".to_string(), "Unknown".to_string(), "Unknown".to_string(), "Unknown".to_string())
+            };
+
+            // ANSI color codes
+            let commit_color = if no_color { "" } else { "\x1b[33m" }; // Yellow for commit hash
+            let date_color = if no_color { "" } else { "\x1b[36m" }; // Cyan for date
+            let reset_color = if no_color { "" } else { "\x1b[0m" }; // Reset color
+
+            result.push_str(&format!(
+                "{}{:>7}{} ({:>15} - {}{:>6}{}) | {:>width$} | {}\n    {}\n",
+                commit_color,
+                commit_hash,
+                reset_color,
+                author_name,
+                date_color,
+                date,
+                reset_color,
+                line_num + 1,
+                highlighted_line,
+                message,
+                width = line_width
+            ));
+        } else if date_only {
             // Date-only format: show just date, line number, and code
             let date = if let Some(hunk) = &hunk_result {
                 let commit = repo
@@ -174,7 +220,7 @@ pub fn get_blame(path: &str, no_color: bool, date_only: bool) -> Result<String> 
     Ok(result)
 }
 
-pub fn get_last_commit(path: &str, no_color: bool, date_only: bool) -> Result<String> {
+pub fn get_last_commit(path: &str, no_color: bool, date_only: bool, commit_message: bool) -> Result<String> {
     // Validate path and get repository and relative path (no file requirement for last commit)
     let (repo, _, relative_path) = validate_git_path(path, false)?;
 
@@ -189,6 +235,7 @@ pub fn get_last_commit(path: &str, no_color: bool, date_only: bool) -> Result<St
         if commit_touches_path(&repo, &commit, &relative_path)? {
             let time = commit.time();
             let date = format_timestamp_day_month_year(time.seconds());
+            let message = commit.summary().unwrap_or("No message");
 
             // If date_only is requested, return just the date
             if date_only {
@@ -199,28 +246,44 @@ pub fn get_last_commit(path: &str, no_color: bool, date_only: bool) -> Result<St
                 });
             }
 
-            // Otherwise return the full commit info
+            // Return the full commit info
             let author = commit.author();
             let name = author.name().unwrap_or("Unknown");
             let commit_hash = commit_id.to_string().chars().take(7).collect::<String>();
-            let message = commit.summary().unwrap_or("No message");
 
             // ANSI color codes
             let commit_color = if no_color { "" } else { "\x1b[33m" }; // Yellow for commit hash
             let date_color = if no_color { "" } else { "\x1b[36m" };   // Cyan for date
             let reset_color = if no_color { "" } else { "\x1b[0m" };   // Reset color
 
-            return Ok(format!(
-                "{}{}{} {} - {}{}{}: {}",
-                commit_color,
-                commit_hash,
-                reset_color,
-                name,
-                date_color,
-                date,
-                reset_color,
-                message
-            ));
+            // If commit_message is requested, show without message on main line, then message indented
+            if commit_message {
+                let main_output = format!(
+                    "{}{}{} {} - {}{}{}",
+                    commit_color,
+                    commit_hash,
+                    reset_color,
+                    name,
+                    date_color,
+                    date,
+                    reset_color
+                );
+                return Ok(format!("{}\n    {}", main_output, message));
+            } else {
+                // Normal output with message on the same line
+                let main_output = format!(
+                    "{}{}{} {} - {}{}{}: {}",
+                    commit_color,
+                    commit_hash,
+                    reset_color,
+                    name,
+                    date_color,
+                    date,
+                    reset_color,
+                    message
+                );
+                return Ok(main_output);
+            }
         }
     }
 
