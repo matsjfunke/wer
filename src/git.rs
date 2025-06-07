@@ -220,14 +220,84 @@ pub fn get_blame(path: &str, no_color: bool, date_only: bool, commit_message: bo
     Ok(result)
 }
 
-pub fn get_last_commit(path: &str, no_color: bool, date_only: bool, commit_message: bool) -> Result<String> {
+pub fn get_last_commit(path: &str, no_color: bool, date_only: bool, commit_message: bool, top: Option<usize>) -> Result<String> {
     // Validate path and get repository and relative path (no file requirement for last commit)
     let (repo, _, relative_path) = validate_git_path(path, false)?;
 
     let mut revwalk = repo.revwalk()?;
     revwalk.push_head()?;
 
-    // Walk through commits to find the last one that modified the path
+    // If top is requested, collect multiple contributors
+    if let Some(n) = top {
+        let mut contributors = Vec::new();
+        let mut seen_authors = std::collections::HashSet::new();
+
+        for commit_id in revwalk {
+            let commit_id = commit_id?;
+            let commit = repo.find_commit(commit_id)?;
+
+            if commit_touches_path(&repo, &commit, &relative_path)? {
+                let author = commit.author();
+                let name = author.name().unwrap_or("Unknown");
+                
+                // Only add if we haven't seen this author before
+                if !seen_authors.contains(name) {
+                    seen_authors.insert(name.to_string());
+                    
+                    let time = commit.time();
+                    let date = format_timestamp_day_month_year(time.seconds());
+                    let commit_hash = commit_id.to_string().chars().take(7).collect::<String>();
+                    let message = commit.summary().unwrap_or("No message");
+
+                    // ANSI color codes
+                    let commit_color = if no_color { "" } else { "\x1b[33m" }; // Yellow for commit hash
+                    let date_color = if no_color { "" } else { "\x1b[36m" };   // Cyan for date
+                    let reset_color = if no_color { "" } else { "\x1b[0m" };   // Reset color
+
+                    let output = if commit_message {
+                        format!(
+                            "{}{}{} {} - {}{}{}\n    {}",
+                            commit_color,
+                            commit_hash,
+                            reset_color,
+                            name,
+                            date_color,
+                            date,
+                            reset_color,
+                            message
+                        )
+                    } else {
+                        format!(
+                            "{}{}{} {} - {}{}{}: {}",
+                            commit_color,
+                            commit_hash,
+                            reset_color,
+                            name,
+                            date_color,
+                            date,
+                            reset_color,
+                            message
+                        )
+                    };
+
+                    contributors.push(output);
+
+                    // Stop when we have enough contributors
+                    if contributors.len() >= n {
+                        break;
+                    }
+                }
+            }
+        }
+
+        if contributors.is_empty() {
+            return Err(anyhow!("No commits found for path: {}", path));
+        }
+
+        return Ok(contributors.join("\n"));
+    }
+
+    // Original single commit logic
     for commit_id in revwalk {
         let commit_id = commit_id?;
         let commit = repo.find_commit(commit_id)?;

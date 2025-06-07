@@ -32,11 +32,18 @@ fn run(cli: Cli) -> Result<()> {
         ));
     }
 
+    // Validate that --top only works in normal mode (not blame mode)
+    if cli.top.is_some() && cli.blame {
+        return Err(anyhow::anyhow!(
+            "--top flag only works in normal mode, not with --blame"
+        ));
+    }
+
     // Choose between blame and last commit based on the flag
     let output = if cli.blame {
         get_blame(&target_path, cli.no_color, cli.date_only, cli.commit_message)?
     } else {
-        get_last_commit(&target_path, cli.no_color, cli.date_only, cli.commit_message)?
+        get_last_commit(&target_path, cli.no_color, cli.date_only, cli.commit_message, cli.top)?
     };
 
     println!("{}", output);

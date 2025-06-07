@@ -19,6 +19,10 @@ pub struct Cli {
     #[arg(short = 'm', long = "commit-message")]
     pub commit_message: bool,
     
+    /// Show last N people who touched the file/directory (normal mode only)
+    #[arg(long = "top")]
+    pub top: Option<usize>,
+    
     /// Disable colored output / syntax highlighting
     #[arg(long = "no-color")]
     pub no_color: bool,
