@@ -11,6 +11,10 @@ pub struct Cli {
     #[arg(short = 'b', long = "blame")]
     pub blame: bool,
     
+    /// Show dates only 
+    #[arg(short = 'd', long = "date-only")]
+    pub date_only: bool,
+    
     /// Disable colored output / syntax highlighting
     #[arg(long = "no-color")]
     pub no_color: bool,
