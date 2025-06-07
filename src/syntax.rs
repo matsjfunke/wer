@@ -22,8 +22,7 @@ impl SyntaxHighlighter {
         // Get syntax definition from file extension with fallbacks for TypeScript
         let syntax = self.get_syntax_for_file(file_path);
 
-        // Use a dark theme that works well in terminals
-        let theme = &self.theme_set.themes["base16-ocean.dark"];
+        let theme = &self.theme_set.themes["base16-eighties.dark"];
         
         let mut highlighter = HighlightLines::new(syntax, theme);
         
