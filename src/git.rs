@@ -281,7 +281,17 @@ pub fn get_last_commit(path: &str, no_color: bool, date_only: bool, commit_messa
             return Err(anyhow!("No commits found for path: {}", path));
         }
 
-        return Ok(contributors.join("\n"));
+        let mut result = contributors.join("\n");
+        
+        // Add indication if fewer contributors found than requested
+        if contributors.len() < n {
+            result.push_str(&format!("\nSearched for {} but only {} contributed", 
+                n,
+                contributors.len()
+            ));
+        }
+
+        return Ok(result);
     }
 
     // Original single commit logic
