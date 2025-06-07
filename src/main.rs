@@ -6,7 +6,7 @@ mod git;
 mod utils;
 
 use cli::Cli;
-use git::{find_repository, get_last_commit};
+use git::{find_repository, get_last_commit, get_blame};
 
 fn main() {
     let cli = Cli::parse();
@@ -27,10 +27,14 @@ fn run(cli: Cli) -> Result<()> {
     // Find the git repository
     let repo = find_repository(&target_path)?;
 
-    // Get the last commit for the path
-    let commit_info = get_last_commit(&repo, &target_path)?;
+    // Choose between blame and last commit based on the flag
+    let output = if cli.blame {
+        get_blame(&repo, &target_path)?
+    } else {
+        get_last_commit(&repo, &target_path)?
+    };
 
-    println!("{}", commit_info);
+    println!("{}", output);
 
     Ok(())
 }

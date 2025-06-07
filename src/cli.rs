@@ -6,4 +6,8 @@ use clap::Parser;
 pub struct Cli {
     /// File or directory path
     pub path: Option<String>,
+    
+    /// Show git blame for the file (only works with files, not directories)
+    #[arg(short = 'b', long = "blame")]
+    pub blame: bool,
 } 
