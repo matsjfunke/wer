@@ -1,0 +1,58 @@
+name: Question
+description: Ask a question about wer
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question about wer? We're here to help! Please provide as much detail as possible.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Your Question
+      description: What would you like to know about wer?
+      placeholder: Ask your question here...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: |
+        What are you trying to achieve? Providing context helps us give better answers.
+      placeholder: |
+        e.g., "I'm trying to understand how wer handles..."
+        or "I want to use wer to..."
+
+  - type: textarea
+    id: attempted
+    attributes:
+      label: What Have You Tried?
+      description: |
+        Have you tried anything already? Include commands you've run and their output.
+      placeholder: |
+        e.g.,
+        ```bash
+        wer --help
+        wer -b main.rs
+        ```
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      description: Please confirm you've done the following
+      options:
+        - label: I've checked the README and documentation
+          required: true
+        - label: I've searched existing issues for similar questions
+          required: true
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: Additional Information
+      description: Any other details that might be helpful
