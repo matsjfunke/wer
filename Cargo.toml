@@ -8,3 +8,4 @@ clap = { version = "4.0", features = ["derive"] }
 git2 = "0.18"
 anyhow = "1.0"
 chrono = { version = "0.4", features = ["serde"] }
+syntect = "5.1"

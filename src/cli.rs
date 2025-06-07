@@ -11,7 +11,7 @@ pub struct Cli {
     #[arg(short = 'b', long = "blame")]
     pub blame: bool,
     
-    /// Disable colored output
+    /// Disable colored output / syntax highlighting
     #[arg(long = "no-color")]
     pub no_color: bool,
 } 

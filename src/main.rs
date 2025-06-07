@@ -4,6 +4,7 @@ use clap::Parser;
 mod cli;
 mod git;
 mod utils;
+mod syntax;
 
 use cli::Cli;
 use git::{find_repository, get_last_commit, get_blame};
@@ -29,7 +30,7 @@ fn run(cli: Cli) -> Result<()> {
 
     // Choose between blame and last commit based on the flag
     let output = if cli.blame {
-        get_blame(&repo, &target_path, cli.no_color)?
+        get_blame(&repo, &target_path, cli.no_color, !cli.no_color)?
     } else {
         get_last_commit(&repo, &target_path, cli.no_color)?
     };

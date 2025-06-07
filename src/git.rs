@@ -3,6 +3,7 @@ use git2::Repository;
 use std::path::{Path, PathBuf};
 
 use crate::utils::{format_timestamp_day_month, format_timestamp_day_month_year};
+use crate::syntax::SyntaxHighlighter;
 
 pub fn find_repository(path: &str) -> Result<Repository> {
     let path = Path::new(path);
@@ -12,7 +13,7 @@ pub fn find_repository(path: &str) -> Result<Repository> {
         .map_err(|_| anyhow!("Not a git repository (or any of the parent directories)"))
 }
 
-pub fn get_blame(repo: &Repository, path: &str, no_color: bool) -> Result<String> {
+pub fn get_blame(repo: &Repository, path: &str, no_color: bool, syntax_highlight: bool) -> Result<String> {
     // Convert path to relative path from repo root
     let repo_workdir = repo
         .workdir()
@@ -43,7 +44,16 @@ pub fn get_blame(repo: &Repository, path: &str, no_color: bool) -> Result<String
     // Get the blame for the file
     let blame = repo
         .blame_file(relative_path, None)
-        .map_err(|e| anyhow!("Failed to get blame for file: {}", e))?;
+        .map_err(|e| {
+            match e.code() {
+                git2::ErrorCode::NotFound => anyhow!(
+                    "File '{}' exists but is not tracked by git. Use 'git add {}' to track it first.",
+                    path,
+                    path
+                ),
+                _ => anyhow!("Failed to get blame for file '{}': {}", path, e)
+            }
+        })?;
 
     let mut result = String::new();
 
@@ -54,6 +64,13 @@ pub fn get_blame(repo: &Repository, path: &str, no_color: bool) -> Result<String
     let lines: Vec<&str> = file_content.lines().collect();
     let line_count = lines.len();
     let line_width = line_count.to_string().len();
+
+    // Initialize syntax highlighter if requested
+    let highlighter = if syntax_highlight && !no_color {
+        Some(SyntaxHighlighter::new())
+    } else {
+        None
+    };
 
     for (line_num, line_content) in lines.iter().enumerate() {
         let hunk_result = blame.get_line(line_num + 1);
@@ -91,6 +108,15 @@ pub fn get_blame(repo: &Repository, path: &str, no_color: bool) -> Result<String
         let date_color = if no_color { "" } else { "\x1b[36m" }; // Cyan for date
         let reset_color = if no_color { "" } else { "\x1b[0m" }; // Reset color
 
+        // Apply syntax highlighting to the line content if enabled
+        let highlighted_line = if let Some(ref highlighter) = highlighter {
+            highlighter
+                .highlight_line(line_content, &full_path, line_num + 1)
+                .unwrap_or_else(|_| line_content.to_string())
+        } else {
+            line_content.to_string()
+        };
+
         result.push_str(&format!(
             "{}{:>7}{} ({:>15} - {}{:>6}{}) | {:>width$} | {}\n",
             commit_color,
@@ -101,7 +127,7 @@ pub fn get_blame(repo: &Repository, path: &str, no_color: bool) -> Result<String
             date,
             reset_color,
             line_num + 1,
-            line_content,
+            highlighted_line,
             width = line_width
         ));
     }
