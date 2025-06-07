@@ -5,45 +5,61 @@ use std::path::{Path, PathBuf};
 use crate::utils::{format_timestamp_day_month, format_timestamp_day_month_year};
 use crate::syntax::SyntaxHighlighter;
 
-pub fn find_repository(path: &str) -> Result<Repository> {
-    let path = Path::new(path);
-
-    // Try to open repository from the given path or find it in parent directories
-    Repository::discover(path)
-        .map_err(|_| anyhow!("Not a git repository (or any of the parent directories)"))
-}
-
-pub fn get_blame(repo: &Repository, path: &str, no_color: bool, syntax_highlight: bool) -> Result<String> {
-    // Convert path to relative path from repo root
-    let repo_workdir = repo
-        .workdir()
-        .ok_or_else(|| anyhow!("Repository has no working directory"))?;
-
+/// Validates path existence, file type, finds git repository, and returns all necessary paths
+fn validate_git_path(path: &str, must_be_file: bool) -> Result<(Repository, PathBuf, PathBuf)> {
+    // First, resolve the full path
     let full_path = if Path::new(path).is_absolute() {
         PathBuf::from(path)
     } else {
         std::env::current_dir()?.join(path)
     };
 
-    // Check if the path exists and is a file
+    // Check if the path exists
     if !full_path.exists() {
-        return Err(anyhow!("Path does not exist: {}", path));
+        return Err(anyhow!(
+            "Path '{}' doesn't exist. Check if the file or directory name is spelled correctly.",
+            path
+        ));
     }
 
-    if full_path.is_dir() {
+    // Check if it's a file (when required, e.g., for blame)
+    if must_be_file && full_path.is_dir() {
         return Err(anyhow!(
             "Blame can only be used on files, not directories: {}",
             path
         ));
     }
 
+    // Find the git repository
+    let search_path = if full_path.is_file() {
+        full_path.parent().unwrap_or(&full_path).to_path_buf()
+    } else {
+        full_path.clone()
+    };
+
+    let repo = Repository::discover(search_path)
+        .map_err(|_| anyhow!("Not a git repository (or any of the parent directories)"))?;
+
+    // Convert path to relative path from repo root
+    let repo_workdir = repo
+        .workdir()
+        .ok_or_else(|| anyhow!("Repository has no working directory"))?;
+
     let relative_path = full_path
         .strip_prefix(repo_workdir)
-        .map_err(|_| anyhow!("Path is not within the repository"))?;
+        .map_err(|_| anyhow!("Path '{}' is not within the repository", path))?
+        .to_path_buf();
+
+    Ok((repo, full_path, relative_path))
+}
+
+pub fn get_blame(path: &str, no_color: bool) -> Result<String> {
+    // Validate path and get repository, full path, and relative path
+    let (repo, full_path, relative_path) = validate_git_path(path, true)?;
 
     // Get the blame for the file
     let blame = repo
-        .blame_file(relative_path, None)
+        .blame_file(&relative_path, None)
         .map_err(|e| {
             match e.code() {
                 git2::ErrorCode::NotFound => anyhow!(
@@ -65,8 +81,8 @@ pub fn get_blame(repo: &Repository, path: &str, no_color: bool, syntax_highlight
     let line_count = lines.len();
     let line_width = line_count.to_string().len();
 
-    // Initialize syntax highlighter if requested
-    let highlighter = if syntax_highlight && !no_color {
+    // Initialize syntax highlighter if colors are enabled
+    let highlighter = if !no_color {
         Some(SyntaxHighlighter::new())
     } else {
         None
@@ -135,31 +151,19 @@ pub fn get_blame(repo: &Repository, path: &str, no_color: bool, syntax_highlight
     Ok(result)
 }
 
-pub fn get_last_commit(repo: &Repository, path: &str, no_color: bool) -> Result<String> {
+pub fn get_last_commit(path: &str, no_color: bool) -> Result<String> {
+    // Validate path and get repository and relative path (no file requirement for last commit)
+    let (repo, _, relative_path) = validate_git_path(path, false)?;
+
     let mut revwalk = repo.revwalk()?;
     revwalk.push_head()?;
-
-    // Convert path to relative path from repo root
-    let repo_workdir = repo
-        .workdir()
-        .ok_or_else(|| anyhow!("Repository has no working directory"))?;
-
-    let full_path = if Path::new(path).is_absolute() {
-        PathBuf::from(path)
-    } else {
-        std::env::current_dir()?.join(path)
-    };
-
-    let relative_path = full_path
-        .strip_prefix(repo_workdir)
-        .map_err(|_| anyhow!("Path is not within the repository"))?;
 
     // Walk through commits to find the last one that modified the path
     for commit_id in revwalk {
         let commit_id = commit_id?;
         let commit = repo.find_commit(commit_id)?;
 
-        if commit_touches_path(&repo, &commit, relative_path)? {
+        if commit_touches_path(&repo, &commit, &relative_path)? {
             let author = commit.author();
             let name = author.name().unwrap_or("Unknown");
             let time = commit.time();
