@@ -8,6 +8,7 @@ mod syntax;
 
 use cli::Cli;
 use git::{get_last_commit, get_blame};
+use utils::resolve_path;
 
 fn main() {
     let cli = Cli::parse();
@@ -22,8 +23,12 @@ fn main() {
 }
 
 fn run(cli: Cli) -> Result<()> {
-    // Get the path, default to current directory if none provided
-    let target_path = cli.path.unwrap_or_else(|| ".".to_string());
+    // Resolve the path - either search for it or use current directory
+    let target_path = if let Some(input_path) = cli.path {
+        resolve_path(&input_path)?
+    } else {
+        ".".to_string()
+    };
 
     // Validate that date_only and commit_message are not used together
     if cli.date_only && cli.commit_message {

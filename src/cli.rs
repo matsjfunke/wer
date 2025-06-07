@@ -7,6 +7,13 @@ use clap::Parser;
 #[command(about = "Find out who last edited any file or directory in a Git repository")]
 #[command(long_about = r#"Find out who last edited any file or directory in a Git repository
 
+SMART PATH RESOLUTION:
+  wer automatically finds files and directories by name:
+  • Type just the filename: "wer main.rs" finds src/main.rs
+  • Type directory name: "wer src/" works from anywhere
+  • Absolute paths: "wer ~/file.txt" or "wer /full/path" used directly
+  • Search ignores common directories (.git, node_modules, target, etc.)
+
 MODES:
   Regular mode (default): Shows the last commit that touched a file or directory
     Format: "61fcdda Author Name - 07 Jun 2025: commit message"
@@ -17,9 +24,10 @@ MODES:
     Only works with files, not directories
 
 EXAMPLES:
-  wer Cargo.toml              Show who last edited Cargo.toml
+  wer Cargo.toml              Find and show who last edited Cargo.toml
+  wer main.rs                 Find src/main.rs automatically
   wer src/                    Show who last touched the src/ directory
-  wer -b src/main.rs          Show git blame with syntax highlighting  
+  wer -b git.rs               Find and show blame for src/git.rs
   wer -d .                    Show only the date of last change
   wer -l 3 src/               Show last 3 contributors to src/ directory
   wer -b -m file.py           Show blame with commit messages"#)]
@@ -29,7 +37,10 @@ EXAMPLES:
     .action(clap::ArgAction::Version)
     .help("Print version")))]
 pub struct Cli {
-    /// File or directory path
+    /// File or directory path (searches automatically if not found in current directory)
+    /// 
+    /// Can be just a filename (main.rs), directory name (src/), or full path.
+    /// For absolute paths, use ~/file.txt or /full/path to skip search.
     pub path: Option<String>,
     
     /// Show git blame with syntax highlighting (files only)
