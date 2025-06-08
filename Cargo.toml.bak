@@ -1,6 +1,6 @@
 [package]
 name = "wer"
-version = "1.0.0"
+version = "1.0.1"
 edition = "2024"
 description = "A simple cli tool to find out who last edited files or directories of git repositories"
 license = "MIT"
@@ -12,8 +12,8 @@ categories = ["command-line-utilities", "development-tools"]
 readme = "README.md"
 
 [dependencies]
-clap = { version = "1.0.0"] }
+clap = { version = "1.0.1"] }
 git2 = "0.18"
 anyhow = "1.0"
-chrono = { version = "1.0.0"] }
+chrono = { version = "1.0.1"] }
 syntect = "5.1"
