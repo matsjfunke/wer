@@ -1,7 +1,15 @@
 [package]
 name = "wer"
-version = "0.2.0"
+version = "1.0.0"
 edition = "2024"
+description = "A command-line tool for working with git repositories"
+license = "MIT"
+authors = ["Mats J Funke <mats.funke@gmail.com>"]
+repository = "https://github.com/matsjfunke/wer"
+homepage = "https://github.com/matsjfunke/wer"
+keywords = ["git", "cli", "blame", "file-history"]
+categories = ["command-line-utilities", "development-tools"]
+readme = "README.md"
 
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
