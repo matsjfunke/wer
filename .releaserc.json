@@ -1,9 +1,43 @@
 {
   "branches": ["main"],
   "plugins": [
-    "@semantic-release/commit-analyzer",
-    "@semantic-release/release-notes-generator",
-    "@semantic-release/changelog",
+    [
+      "@semantic-release/commit-analyzer",
+      {
+        "preset": "angular",
+        "releaseRules": [
+          { "type": "docs", "release": "patch" },
+          { "type": "refactor", "release": "patch" },
+          { "type": "perf", "release": "patch" },
+          { "type": "test", "release": false },
+          { "type": "build", "release": false },
+          { "type": "ci", "release": false },
+          { "type": "chore", "release": false }
+        ]
+      }
+    ],
+    [
+      "@semantic-release/release-notes-generator",
+      {
+        "preset": "conventionalcommits",
+        "presetConfig": {
+          "types": [
+            { "type": "feat", "section": "🚢 Features" },
+            { "type": "fix", "section": "🐛 Bug Fixes" },
+            { "type": "perf", "section": "🚀 Performance Improvements" },
+            { "type": "refactor", "section": "🛠️ Code Refactoring" },
+            { "type": "docs", "section": "📚 Documentation" },
+            { "type": "test", "section": "🧪 Tests" },
+            { "type": "build", "section": "🏗️ Build System" },
+            { "type": "ci", "section": "👷 CI" },
+            { "type": "chore", "section": "🧹 Chores" }
+          ]
+        },
+        "writerOpts": {
+          "commitPartial": "* {{subject}} by {{author.name}} ([commit-{{shortHash}}](https://github.com/matsjfunke/wer/commit/{{hash}}))\n"
+        }
+      }
+    ],
     [
       "@semantic-release/exec",
       {
@@ -16,12 +50,22 @@
         "publishCmd": "cargo publish --token $CARGO_REGISTRY_TOKEN"
       }
     ],
-    "@semantic-release/github",
+    [
+      "@semantic-release/github",
+      {
+        "assets": [],
+        "successComment": "🎉 This ${issue.pull_request ? 'PR is included' : 'issue is fixed'} in version ${nextRelease.version}",
+        "failComment": "❌ Release failed due to an error",
+        "failTitle": "Release Failed",
+        "labels": ["released"],
+        "releasedLabels": ["released"]
+      }
+    ],
     [
       "@semantic-release/git",
       {
-        "assets": ["Cargo.toml", "Cargo.lock", "CHANGELOG.md"],
-        "message": "chore(release): ${nextRelease.version} [skip ci]"
+        "assets": ["Cargo.toml", "Cargo.lock"],
+        "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
       }
     ]
   ]
