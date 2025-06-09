@@ -67,6 +67,14 @@ wer src/                   # Works from anywhere in the repository
 # For absolute paths, use full paths to skip search
 wer ~/Documents/file.txt   # Uses absolute path directly
 wer /full/path/to/file     # No search, direct access
+
+# shows multiples matches in normal mode
+wer config.toml
+# → src/config.toml:
+# → 61fcdda Mats Julius Funke - 07 Jun 2025: Update config
+# →
+# → tests/config.toml:
+# → a1b2c3d Jane Doe - 05 Jun 2025: Add test config
 ```
 
 #### Basic Usage
