@@ -1,4 +1,4 @@
-# wer ⁉️
+# ⁉️ wer ⁉️
 
 `wer` (German "who") is a command-line tool for answering that everyday question:
 
@@ -7,7 +7,9 @@
 No more complex `git log` commands, no more hunting for exact file paths. `wer` gives you context aware file / directory search.
 `wer` offers both file-level recency and line-specific history through its `blame mode`, bridging the gap between `git blame` and `git-who` plus offering features like smart file finding and syntax highlighting.
 
-## Quick Start
+![Normal Mode](./screenshots/normal-mode.png)
+
+## 🚀 Quick Start
 
 ```bash
 # install wer
@@ -20,25 +22,45 @@ wer main.rs
 wer -l 3 src/
 ```
 
-## Installation
+## 📚 Table of Contents
+
+- [📦 Installation](#-installation)
+- [🎮 Usage](#usage)
+  - [🏁 All Flags](#-all-flags)
+  - [✨ Smart Path Resolution](#-smart-path-resolution)
+  - [🎮 Basic Usage](#-basic-usage)
+  - [👥 Last Contributors](#-last-contributors)
+  - [🫵 Blame Mode](#-blame-mode)
+  - [🎨 Display Options](#-display-options)
+- [👨‍💻 Contributing](#-contributing)
+- [📑 License](#-license)
+
+## 📦 Installation
 
 **From crates.io (Recommended)**
 
 ```bash
+#install cargo
+curl https://sh.rustup.rs -sSf | sh
+# install wer crate
 cargo install wer
 ```
 
 **From Source**
 
 ```bash
+#install cargo
+curl https://sh.rustup.rs -sSf | sh
+# clone repository
 git clone https://github.com/matsjfunke/wer
+# install wer
 cd wer
 cargo install --path .
 ```
 
 ## Usage
 
-### All Flags
+### 🏁 All Flags
 
 | Flag                   | Description                                       |
 | ---------------------- | ------------------------------------------------- |
@@ -50,9 +72,7 @@ cargo install --path .
 | `-v, --version`        | Print version information                         |
 | `-h, --help`           | Show help information                             |
 
-### Examples
-
-#### Smart Path Resolution ✨
+### ✨ Smart Path Resolution
 
 `wer` automatically finds files and directories by name - no need to remember exact paths!
 
@@ -68,7 +88,7 @@ wer src/                   # Works from anywhere in the repository
 wer ~/Documents/file.txt   # Uses absolute path directly
 wer /full/path/to/file     # No search, direct access
 
-# shows multiples matches in normal mode
+# Shows multiples matches in normal mode
 wer config.toml
 # → src/config.toml:
 # → 61fcdda Mats Julius Funke - 07 Jun 2025: Update config
@@ -77,7 +97,7 @@ wer config.toml
 # → a1b2c3d Jane Doe - 05 Jun 2025: Add test config
 ```
 
-#### Basic Usage
+### 🎮 Basic Usage
 
 ```bash
 # Check who last edited a file
@@ -93,7 +113,9 @@ wer
 # → 61fcdda Mats Julius Funke - 07 Jun 2025: Latest changes
 ```
 
-#### Last Contributors
+### 👥 Last Contributors
+
+![Last Mode](./screenshots/last-mode.png)
 
 Find the last N unique people who touched a file or directory:
 
@@ -107,7 +129,9 @@ wer -l 5 src/
 # Searched for 5 but only 4 contributed  # (if fewer found)
 ```
 
-#### Blame Mode
+### 🫵 Blame Mode
+
+![Blame Mode](./screenshots/blame-mode.png)
 
 Show git blame with syntax highlighting for any file:
 
@@ -118,7 +142,9 @@ wer -b main.rs              # Automatically finds src/main.rs
 # → 6b70ffb (Mats Julius Fun - 07 Jun) |  2 | use clap::Parser;
 ```
 
-#### Display Options
+### 🎨 Display Options
+
+![Blame Mode date-only](./screenshots/blame-mode-date-only.png)
 
 ```bash
 # Show only dates
@@ -141,10 +167,10 @@ wer -b -m main.rs          # Blame with commit messages
 wer --no-color -b main.rs
 ```
 
-## Contributing
+## 👨‍💻 Contributing
 
 Contributions welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## License
+## 📑 License
 
 This project is licensed under the MIT License - see [LICENSE.md](LICENSE.md) for details.
