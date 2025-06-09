@@ -41,7 +41,7 @@
     [
       "@semantic-release/exec",
       {
-        "prepareCmd": "taplo set Cargo.toml package.version ${nextRelease.version}"
+        "prepareCmd": "cargo set-version ${nextRelease.version}"
       }
     ],
     [
