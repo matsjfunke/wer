@@ -76,6 +76,40 @@ wer/
 
 ## Code Guidelines
 
+### Code Formatting
+
+This project uses automated formatting to maintain code consistency:
+
+- **rustfmt**: All code must be formatted with `rustfmt` using the project's `rustfmt.toml` configuration
+- **Clippy**: Code must pass all Clippy lints without warnings
+
+#### Commands
+
+Use these cargo commands for formatting and linting:
+
+```bash
+# Format all code
+cargo fmt --all
+
+# Check if code is properly formatted (without changing files)
+cargo fmt --all -- --check
+
+# Run Clippy linter
+cargo clippy --all-targets --all-features -- -D warnings
+
+# Run tests
+cargo test
+
+# Build the project
+cargo build --release
+```
+
+#### Automated Checks
+
+- GitHub Actions automatically checks formatting and linting on all PRs
+- PRs must pass all formatting and lint checks before merging
+- Format your code before submitting to avoid CI failures
+
 ### Rust Style
 
 - Follow [Rust API Guidelines](https://rust-lang.github.io/api-guidelines/)

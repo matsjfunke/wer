@@ -1,7 +1,7 @@
 use anyhow::Result;
 use std::path::Path;
 use syntect::easy::HighlightLines;
-use syntect::highlighting::{ThemeSet, Style};
+use syntect::highlighting::{Style, ThemeSet};
 use syntect::parsing::SyntaxSet;
 use syntect::util::as_24_bit_terminal_escaped;
 
@@ -23,12 +23,12 @@ impl SyntaxHighlighter {
         let syntax = self.get_syntax_for_file(file_path);
 
         let theme = &self.theme_set.themes["base16-eighties.dark"];
-        
+
         let mut highlighter = HighlightLines::new(syntax, theme);
-        
+
         // Highlight the line
         let ranges: Vec<(Style, &str)> = highlighter.highlight_line(line, &self.syntax_set)?;
-        
+
         // Convert to terminal escape codes
         Ok(as_24_bit_terminal_escaped(&ranges[..], false))
     }
@@ -67,4 +67,4 @@ impl SyntaxHighlighter {
         // Fallback to plain text
         self.syntax_set.find_syntax_plain_text()
     }
-} 
+}
