@@ -5,10 +5,11 @@ mod cli;
 mod git;
 mod utils;
 mod syntax;
+mod search;
 
 use cli::Cli;
 use git::{get_last_commit, get_blame};
-use utils::resolve_path_all;
+use search::find_all_matches;
 
 fn main() {
     let cli = Cli::parse();
@@ -39,7 +40,7 @@ fn run(cli: Cli) -> Result<()> {
 
     // Resolve the path(s) - either search for it or use current directory
     let target_paths = if let Some(input_path) = cli.path {
-        let matches = resolve_path_all(&input_path)?;
+        let matches = find_all_matches(&input_path)?;
         
         // In blame mode, only allow single file
         if cli.blame && matches.len() > 1 {
