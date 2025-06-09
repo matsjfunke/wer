@@ -149,8 +149,8 @@ impl CommitInfo {
         highlighted_line: &str,
     ) -> String {
         format!(
-            "│ {:<7} │ {:<15} │ {}{:<6}{} │ {:>4} │ {}\n",
-            "", "", colors.date, self.date, colors.reset, line_num, highlighted_line,
+            "│ {}{:<6}{} │ {:>4} │ {}\n",
+            colors.date, self.date, colors.reset, line_num, highlighted_line,
         )
     }
 }
@@ -237,19 +237,35 @@ pub fn get_blame(
     let colors = ColorScheme::new(no_color);
     let mut result = String::new();
 
-    // Add header for the blame table
-    let header_line = format!("┌{:─<9}┬{:─<17}┬{:─<8}┬{:─<6}┬{:─<100}", "", "", "", "", "");
-    result.push_str(&header_line);
-    result.push('\n');
+    if date_only {
+        // Add header for date-only mode (Date, Line, Code only)
+        let header_line = format!("┌{:─<8}┬{:─<6}┬{:─<100}┐", "", "", "");
+        result.push_str(&header_line);
+        result.push('\n');
 
-    result.push_str(&format!(
-        "│ {:<7} │ {:<15} │ {:<6} │ {:<3} │ {}\n",
-        "Commit", "Name", "Date", "Line", "Code"
-    ));
+        result.push_str(&format!(
+            "│ {:<6} │ {:<4} │ {}\n",
+            "Date", "Line", "Code"
+        ));
 
-    let separator_line = format!("├{:─<9}┼{:─<17}┼{:─<8}┼{:─<6}┼{:─<100}", "", "", "", "", "");
-    result.push_str(&separator_line);
-    result.push('\n');
+        let separator_line = format!("├{:─<8}┼{:─<6}┼{:─<100}┤", "", "", "");
+        result.push_str(&separator_line);
+        result.push('\n');
+    } else {
+        // Add header for the full blame table
+        let header_line = format!("┌{:─<9}┬{:─<17}┬{:─<8}┬{:─<6}┬{:─<100}┐", "", "", "", "", "");
+        result.push_str(&header_line);
+        result.push('\n');
+
+        result.push_str(&format!(
+            "│ {:<7} │ {:<15} │ {:<6} │ {:<4} │ {}\n",
+            "Commit", "Name", "Date", "Line", "Code"
+        ));
+
+        let separator_line = format!("├{:─<9}┼{:─<17}┼{:─<8}┼{:─<6}┼{:─<100}┤", "", "", "", "", "");
+        result.push_str(&separator_line);
+        result.push('\n');
+    }
 
     for (line_num, line_content) in lines.iter().enumerate() {
         let hunk_result = blame.get_line(line_num + 1);
@@ -295,8 +311,13 @@ pub fn get_blame(
     }
 
     // Add bottom border to complete the table
-    let bottom_line = format!("└{:─<9}┴{:─<17}┴{:─<8}┴{:─<6}┴{:─<100}", "", "", "", "", "");
-    result.push_str(&bottom_line);
+    if date_only {
+        let bottom_line = format!("└{:─<8}┴{:─<6}┴{:─<100}┘", "", "", "");
+        result.push_str(&bottom_line);
+    } else {
+        let bottom_line = format!("└{:─<9}┴{:─<17}┴{:─<8}┴{:─<6}┴{:─<100}┘", "", "", "", "", "");
+        result.push_str(&bottom_line);
+    }
     result.push('\n');
 
     Ok(result)
