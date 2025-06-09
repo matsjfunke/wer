@@ -17,32 +17,24 @@ pub fn find_all_matches(input: &str) -> Result<Vec<String>> {
     
     // Otherwise, search for it recursively starting from current directory
     let current_dir = std::env::current_dir()?;
+    let mut matches = Vec::new();
     
-    let matches = search_all_matches(&current_dir, input)?;
+    search_recursive(&current_dir, input, &mut matches)?;
     
     if matches.is_empty() {
         return Err(anyhow!("No file or directory named '{}' found starting from current directory", input));
     }
     
-    // Convert all matches to relative paths
-    let relative_matches: Vec<String> = matches
-        .iter()
+    // Convert all matches to relative paths in one go
+    Ok(matches
+        .into_iter()
         .map(|path| {
             path.strip_prefix(&current_dir)
-                .unwrap_or(path)
+                .unwrap_or(&path)
                 .to_string_lossy()
                 .to_string()
         })
-        .collect();
-    
-    Ok(relative_matches)
-}
-
-/// Recursively search for all files or directories matching the target name
-fn search_all_matches(dir: &Path, target_name: &str) -> Result<Vec<PathBuf>> {
-    let mut matches = Vec::new();
-    search_recursive(dir, target_name, &mut matches)?;
-    Ok(matches)
+        .collect())
 }
 
 /// Recursively search for all files or directories by name and collect them
@@ -70,11 +62,9 @@ fn search_recursive(dir: &Path, target_name: &str, matches: &mut Vec<PathBuf>) -
 
 /// Check if a directory should be ignored during search
 fn is_ignored_directory(name: &str) -> bool {
-    match name {
+    matches!(name, 
         ".git" | ".svn" | ".hg" | 
         "node_modules" | "target" | "build" | "dist" |
-        ".vscode" | ".idea" | "__pycache__" => true,
-        name if name.starts_with('.') => true,
-        _ => false,
-    }
+        ".vscode" | ".idea" | "__pycache__"
+    ) || name.starts_with('.')
 } 
