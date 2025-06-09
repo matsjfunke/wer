@@ -1,6 +1,6 @@
 [package]
 name = "wer"
-version = "1.1.0"
+version = "1.1.1"
 edition = "2024"
 description = "A simple cli tool to find out who last edited files or directories of git repositories"
 license = "MIT"
