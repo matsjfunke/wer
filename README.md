@@ -22,7 +22,20 @@ wer main.rs
 wer -l 3 src/
 ```
 
-## : 📦 Installation
+## 📚 Table of Contents
+
+- [📦 Installation](#-installation)
+- [🎮 Usage](#usage)
+  - [🏁 All Flags](#-all-flags)
+  - [✨ Smart Path Resolution](#-smart-path-resolution)
+  - [🎮 Basic Usage](#-basic-usage)
+  - [👥 Last Contributors](#-last-contributors)
+  - [🫵 Blame Mode](#-blame-mode)
+  - [🎨 Display Options](#-display-options)
+- [👨‍💻 Contributing](#-contributing)
+- [📑 License](#-license)
+
+## 📦 Installation
 
 **From crates.io (Recommended)**
 
@@ -59,9 +72,7 @@ cargo install --path .
 | `-v, --version`        | Print version information                         |
 | `-h, --help`           | Show help information                             |
 
-### Examples
-
-#### ✨ Smart Path Resolution
+### ✨ Smart Path Resolution
 
 `wer` automatically finds files and directories by name - no need to remember exact paths!
 
@@ -86,7 +97,7 @@ wer config.toml
 # → a1b2c3d Jane Doe - 05 Jun 2025: Add test config
 ```
 
-#### Basic Usage
+### 🎮 Basic Usage
 
 ```bash
 # Check who last edited a file
@@ -102,7 +113,7 @@ wer
 # → 61fcdda Mats Julius Funke - 07 Jun 2025: Latest changes
 ```
 
-#### : 👥 Last Contributors
+### 👥 Last Contributors
 
 ![Last Mode](./screenshots/last-mode.png)
 
@@ -118,7 +129,7 @@ wer -l 5 src/
 # Searched for 5 but only 4 contributed  # (if fewer found)
 ```
 
-#### 🫵 Blame Mode
+### 🫵 Blame Mode
 
 ![Blame Mode](./screenshots/blame-mode.png)
 
@@ -131,7 +142,7 @@ wer -b main.rs              # Automatically finds src/main.rs
 # → 6b70ffb (Mats Julius Fun - 07 Jun) |  2 | use clap::Parser;
 ```
 
-#### 🎨 Display Options
+### 🎨 Display Options
 
 ![Blame Mode date-only](./screenshots/blame-mode-date-only.png)
 
