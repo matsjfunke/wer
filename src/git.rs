@@ -243,17 +243,17 @@ pub fn get_blame(
         result.push_str(&header_line);
         result.push('\n');
 
-        result.push_str(&format!(
-            "│ {:<6} │ {:<4} │ {}\n",
-            "Date", "Line", "Code"
-        ));
+        result.push_str(&format!("│ {:<6} │ {:<4} │ {}\n", "Date", "Line", "Code"));
 
         let separator_line = format!("├{:─<8}┼{:─<6}┼{:─<100}┤", "", "", "");
         result.push_str(&separator_line);
         result.push('\n');
     } else {
         // Add header for the full blame table
-        let header_line = format!("┌{:─<9}┬{:─<17}┬{:─<8}┬{:─<6}┬{:─<100}┐", "", "", "", "", "");
+        let header_line = format!(
+            "┌{:─<9}┬{:─<17}┬{:─<8}┬{:─<6}┬{:─<100}┐",
+            "", "", "", "", ""
+        );
         result.push_str(&header_line);
         result.push('\n');
 
@@ -262,7 +262,10 @@ pub fn get_blame(
             "Commit", "Name", "Date", "Line", "Code"
         ));
 
-        let separator_line = format!("├{:─<9}┼{:─<17}┼{:─<8}┼{:─<6}┼{:─<100}┤", "", "", "", "", "");
+        let separator_line = format!(
+            "├{:─<9}┼{:─<17}┼{:─<8}┼{:─<6}┼{:─<100}┤",
+            "", "", "", "", ""
+        );
         result.push_str(&separator_line);
         result.push('\n');
     }
@@ -285,12 +288,7 @@ pub fn get_blame(
             if date_only {
                 commit_info.format_date_only(&colors, line_num + 1, &highlighted_line)
             } else {
-                commit_info.format_blame(
-                    &colors,
-                    line_num + 1,
-                    &highlighted_line,
-                    commit_message,
-                )
+                commit_info.format_blame(&colors, line_num + 1, &highlighted_line, commit_message)
             }
         } else {
             let commit_info = CommitInfo::unknown(false);
@@ -298,12 +296,7 @@ pub fn get_blame(
             if date_only {
                 commit_info.format_date_only(&colors, line_num + 1, &highlighted_line)
             } else {
-                commit_info.format_blame(
-                    &colors,
-                    line_num + 1,
-                    &highlighted_line,
-                    commit_message,
-                )
+                commit_info.format_blame(&colors, line_num + 1, &highlighted_line, commit_message)
             }
         };
 
@@ -315,7 +308,10 @@ pub fn get_blame(
         let bottom_line = format!("└{:─<8}┴{:─<6}┴{:─<100}┘", "", "", "");
         result.push_str(&bottom_line);
     } else {
-        let bottom_line = format!("└{:─<9}┴{:─<17}┴{:─<8}┴{:─<6}┴{:─<100}┘", "", "", "", "", "");
+        let bottom_line = format!(
+            "└{:─<9}┴{:─<17}┴{:─<8}┴{:─<6}┴{:─<100}┘",
+            "", "", "", "", ""
+        );
         result.push_str(&bottom_line);
     }
     result.push('\n');
