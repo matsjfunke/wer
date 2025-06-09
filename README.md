@@ -1,4 +1,4 @@
-# wer ⁉️
+# ⁉️ wer ⁉️
 
 `wer` (German "who") is a command-line tool for answering that everyday question:
 
@@ -7,7 +7,9 @@
 No more complex `git log` commands, no more hunting for exact file paths. `wer` gives you context aware file / directory search.
 `wer` offers both file-level recency and line-specific history through its `blame mode`, bridging the gap between `git blame` and `git-who` plus offering features like smart file finding and syntax highlighting.
 
-## Quick Start
+![Normal Mode](./screenshots/normal-mode.png)
+
+## 🚀 Quick Start
 
 ```bash
 # install wer
@@ -20,25 +22,32 @@ wer main.rs
 wer -l 3 src/
 ```
 
-## Installation
+## : 📦 Installation
 
 **From crates.io (Recommended)**
 
 ```bash
+#install cargo
+curl https://sh.rustup.rs -sSf | sh
+# install wer crate
 cargo install wer
 ```
 
 **From Source**
 
 ```bash
+#install cargo
+curl https://sh.rustup.rs -sSf | sh
+# clone repository
 git clone https://github.com/matsjfunke/wer
+# install wer
 cd wer
 cargo install --path .
 ```
 
 ## Usage
 
-### All Flags
+### 🏁 All Flags
 
 | Flag                   | Description                                       |
 | ---------------------- | ------------------------------------------------- |
@@ -52,7 +61,7 @@ cargo install --path .
 
 ### Examples
 
-#### Smart Path Resolution
+#### ✨ Smart Path Resolution
 
 `wer` automatically finds files and directories by name - no need to remember exact paths!
 
@@ -93,7 +102,9 @@ wer
 # → 61fcdda Mats Julius Funke - 07 Jun 2025: Latest changes
 ```
 
-#### Last Contributors
+#### : 👥 Last Contributors
+
+![Last Mode](./screenshots/last-mode.png)
 
 Find the last N unique people who touched a file or directory:
 
@@ -107,7 +118,9 @@ wer -l 5 src/
 # Searched for 5 but only 4 contributed  # (if fewer found)
 ```
 
-#### Blame Mode
+#### 🫵 Blame Mode
+
+![Blame Mode](./screenshots/blame-mode.png)
 
 Show git blame with syntax highlighting for any file:
 
@@ -118,7 +131,9 @@ wer -b main.rs              # Automatically finds src/main.rs
 # → 6b70ffb (Mats Julius Fun - 07 Jun) |  2 | use clap::Parser;
 ```
 
-#### Display Options
+#### 🎨 Display Options
+
+![Blame Mode date-only](./screenshots/blame-mode-date-only.png)
 
 ```bash
 # Show only dates
@@ -141,10 +156,10 @@ wer -b -m main.rs          # Blame with commit messages
 wer --no-color -b main.rs
 ```
 
-## Contributing
+## 👨‍💻 Contributing
 
 Contributions welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
-## License
+## 📑 License
 
 This project is licensed under the MIT License - see [LICENSE.md](LICENSE.md) for details.
