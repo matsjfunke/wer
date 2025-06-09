@@ -97,11 +97,8 @@ cargo fmt --all -- --check
 # Run Clippy linter
 cargo clippy --all-targets --all-features -- -D warnings
 
-# Run tests
-cargo test
-
 # Build the project
-cargo build --release
+cargo build
 ```
 
 #### Automated Checks

@@ -52,7 +52,7 @@ cargo install --path .
 
 ### Examples
 
-#### Smart Path Resolution ✨
+#### Smart Path Resolution
 
 `wer` automatically finds files and directories by name - no need to remember exact paths!
 
@@ -68,7 +68,7 @@ wer src/                   # Works from anywhere in the repository
 wer ~/Documents/file.txt   # Uses absolute path directly
 wer /full/path/to/file     # No search, direct access
 
-# shows multiples matches in normal mode
+# Shows multiples matches in normal mode
 wer config.toml
 # → src/config.toml:
 # → 61fcdda Mats Julius Funke - 07 Jun 2025: Update config

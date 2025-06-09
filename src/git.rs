@@ -110,7 +110,7 @@ impl CommitInfo {
     ) -> String {
         if commit_message_separate {
             format!(
-                "| {}{:>7}{} | {:>15} - {}{:>6}{} | {:>width$} | {}\n    {}|\n",
+                "│ {}{:<7}{} │ {:<15} │ {}{:<6}{} │ {:>4} │ {}\n│ {:<7} │ {:<15} │ {:<6} │ {:<4} │ └─ {}\n",
                 colors.commit,
                 self.hash,
                 colors.reset,
@@ -120,12 +120,15 @@ impl CommitInfo {
                 colors.reset,
                 line_num,
                 highlighted_line,
+                "",
+                "",
+                "",
+                "",
                 self.message,
-                width = line_width
             )
         } else {
             format!(
-                "{}{:>7}{} ({:>15} - {}{:>6}{}) | {:>width$} | {}\n",
+                "│ {}{:<7}{} │ {:<15} │ {}{:<6}{} │ {:>4} │ {}\n",
                 colors.commit,
                 self.hash,
                 colors.reset,
@@ -135,7 +138,6 @@ impl CommitInfo {
                 colors.reset,
                 line_num,
                 highlighted_line,
-                width = line_width
             )
         }
     }
@@ -149,13 +151,8 @@ impl CommitInfo {
         highlighted_line: &str,
     ) -> String {
         format!(
-            "{}{:>6}{} | {:>width$} | {}\n",
-            colors.date,
-            self.date,
-            colors.reset,
-            line_num,
-            highlighted_line,
-            width = line_width
+            "│ {:<7} │ {:<15} │ {}{:<6}{} │ {:>4} │ {}\n",
+            "", "", colors.date, self.date, colors.reset, line_num, highlighted_line,
         )
     }
 }
@@ -232,7 +229,7 @@ pub fn get_blame(
 
     let lines: Vec<&str> = file_content.lines().collect();
     let line_count = lines.len();
-    let line_width = line_count.to_string().len();
+    let line_width = 3; // Fixed to 3 digits instead of dynamic
 
     // Initialize syntax highlighter if colors are enabled
     let highlighter = if !no_color {
@@ -243,6 +240,20 @@ pub fn get_blame(
 
     let colors = ColorScheme::new(no_color);
     let mut result = String::new();
+
+    // Add header for the blame table
+    let header_line = format!("┌{:─<9}┬{:─<17}┬{:─<8}┬{:─<6}┬{:─<100}", "", "", "", "", "");
+    result.push_str(&header_line);
+    result.push('\n');
+
+    result.push_str(&format!(
+        "│ {:<7} │ {:<15} │ {:<6} │ {:<3} │ {}\n",
+        "Commit", "Name", "Date", "Line", "Code"
+    ));
+
+    let separator_line = format!("├{:─<9}┼{:─<17}┼{:─<8}┼{:─<6}┼{:─<100}", "", "", "", "", "");
+    result.push_str(&separator_line);
+    result.push('\n');
 
     for (line_num, line_content) in lines.iter().enumerate() {
         let hunk_result = blame.get_line(line_num + 1);
@@ -288,6 +299,11 @@ pub fn get_blame(
 
         result.push_str(&line_output);
     }
+
+    // Add bottom border to complete the table
+    let bottom_line = format!("└{:─<9}┴{:─<17}┴{:─<8}┴{:─<6}┴{:─<100}", "", "", "", "", "");
+    result.push_str(&bottom_line);
+    result.push('\n');
 
     Ok(result)
 }
