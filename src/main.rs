@@ -57,9 +57,7 @@ fn run(cli: Cli) -> Result<()> {
         vec![".".to_string()]
     };
 
-    // Process each target path
-    let mut results = Vec::new();
-    
+    // Process and print each target path
     for (_i, target_path) in target_paths.iter().enumerate() {
         let output = if cli.blame {
             get_blame(target_path, cli.no_color, cli.date_only, cli.commit_message)?
@@ -67,20 +65,11 @@ fn run(cli: Cli) -> Result<()> {
             get_last_commit(target_path, cli.no_color, cli.date_only, cli.commit_message, cli.last)?
         };
         
-        // If multiple files, show which file this is
         if target_paths.len() > 1 {
-            results.push(format!("{}:\n{}", target_path, output));
+            println!("{}:\n{}\n", target_path, output);
         } else {
-            results.push(output);
+            println!("{}\n", output);
         }
-    }
-
-    // Print all results
-    for (i, result) in results.iter().enumerate() {
-        if i > 0 {
-            println!(); // Add blank line between multiple results
-        }
-        println!("{}", result);
     }
 
     Ok(())
