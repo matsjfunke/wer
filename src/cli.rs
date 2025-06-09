@@ -14,6 +14,11 @@ SMART PATH RESOLUTION:
   • Absolute paths: "wer ~/file.txt" or "wer /full/path" used directly
   • Search ignores common directories (.git, node_modules, target, etc.)
 
+MULTIPLE MATCHES BEHAVIOR:
+  When multiple files/directories with the same name are found:
+  • Regular mode: Shows results for all matches, each prefixed with its path
+  • Blame mode: Shows error listing all matches and asks for full path specification
+
 MODES:
   Regular mode (default): Shows the last commit that touched a file or directory
     Format: "61fcdda Author Name - 07 Jun 2025: commit message"
