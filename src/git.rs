@@ -74,7 +74,7 @@ impl CommitInfo {
     fn format_regular(&self, colors: &ColorScheme, commit_message_separate: bool) -> String {
         if commit_message_separate {
             format!(
-                "{}{}{} {} - {}{}{}\n    {}",
+                "{}{}{} {} - {}{}{}\n└─ {}",
                 colors.commit,
                 self.hash,
                 colors.reset,
@@ -104,7 +104,6 @@ impl CommitInfo {
         &self,
         colors: &ColorScheme,
         line_num: usize,
-        line_width: usize,
         highlighted_line: &str,
         commit_message_separate: bool,
     ) -> String {
@@ -147,7 +146,6 @@ impl CommitInfo {
         &self,
         colors: &ColorScheme,
         line_num: usize,
-        line_width: usize,
         highlighted_line: &str,
     ) -> String {
         format!(
@@ -228,8 +226,6 @@ pub fn get_blame(
         std::fs::read_to_string(&full_path).map_err(|e| anyhow!("Failed to read file: {}", e))?;
 
     let lines: Vec<&str> = file_content.lines().collect();
-    let line_count = lines.len();
-    let line_width = 3; // Fixed to 3 digits instead of dynamic
 
     // Initialize syntax highlighter if colors are enabled
     let highlighter = if !no_color {
@@ -271,12 +267,11 @@ pub fn get_blame(
             let commit_info = CommitInfo::from_hunk(&repo, hunk, false)?;
 
             if date_only {
-                commit_info.format_date_only(&colors, line_num + 1, line_width, &highlighted_line)
+                commit_info.format_date_only(&colors, line_num + 1, &highlighted_line)
             } else {
                 commit_info.format_blame(
                     &colors,
                     line_num + 1,
-                    line_width,
                     &highlighted_line,
                     commit_message,
                 )
@@ -285,12 +280,11 @@ pub fn get_blame(
             let commit_info = CommitInfo::unknown(false);
 
             if date_only {
-                commit_info.format_date_only(&colors, line_num + 1, line_width, &highlighted_line)
+                commit_info.format_date_only(&colors, line_num + 1, &highlighted_line)
             } else {
                 commit_info.format_blame(
                     &colors,
                     line_num + 1,
-                    line_width,
                     &highlighted_line,
                     commit_message,
                 )
