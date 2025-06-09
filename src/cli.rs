@@ -5,7 +5,8 @@ use clap::Parser;
 #[command(version = env!("CARGO_PKG_VERSION"))]
 #[command(disable_version_flag = true)]
 #[command(about = "Find out who last edited any file or directory in a Git repository")]
-#[command(long_about = r#"Find out who last edited any file or directory in a Git repository
+#[command(
+    long_about = r#"Find out who last edited any file or directory in a Git repository
 
 SMART PATH RESOLUTION:
   wer automatically finds files and directories by name:
@@ -35,7 +36,8 @@ EXAMPLES:
   wer -b git.rs               Find and show blame for src/git.rs
   wer -d .                    Show only the date of last change
   wer -l 3 src/               Show last 3 contributors to src/ directory
-  wer -b -m file.py           Show blame with commit messages"#)]
+  wer -b -m file.py           Show blame with commit messages"#
+)]
 #[command(arg(clap::Arg::new("version")
     .short('v')
     .long("version")
@@ -43,33 +45,33 @@ EXAMPLES:
     .help("Print version")))]
 pub struct Cli {
     /// File or directory path (searches automatically if not found in current directory)
-    /// 
+    ///
     /// Can be just a filename (main.rs), directory name (src/), or full path.
     /// For absolute paths, use ~/file.txt or /full/path to skip search.
     pub path: Option<String>,
-    
+
     /// Show git blame with syntax highlighting (files only)
     #[arg(short = 'b', long = "blame")]
     pub blame: bool,
-    
+
     /// Show dates only
     /// Regular mode: "07 Jun 2025"
     /// Blame mode: "07 Jun | 1 | code content"
     #[arg(short = 'd', long = "date-only")]
     pub date_only: bool,
-    
+
     /// Show commit messages on separate indented lines
     #[arg(short = 'm', long = "commit-message")]
     pub commit_message: bool,
-    
+
     /// Show the last N unique contributors (regular mode only)
     ///
     /// Lists the most recent N unique people who modified the path, with an
     /// indication if fewer contributors exist than requested.
     #[arg(short = 'l', long = "last", value_name = "N")]
     pub last: Option<usize>,
-    
+
     /// Disable colored output and syntax highlighting
     #[arg(long = "no-color")]
     pub no_color: bool,
-} 
+}
