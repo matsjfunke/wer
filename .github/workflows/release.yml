@@ -20,6 +20,9 @@ jobs:
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
+      - name: Install cargo-edit
+        run: cargo install cargo-edit
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -28,9 +31,6 @@ jobs:
       - name: Install semantic-release dependencies
         run: |
           npm install -g semantic-release @semantic-release/git @semantic-release/exec @semantic-release/github conventional-changelog-conventionalcommits
-
-      - name: Install Taplo CLI
-        run: npm install -g @taplo/cli
 
       - name: Release
         env:
