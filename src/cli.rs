@@ -9,11 +9,19 @@ use clap::Parser;
     long_about = r#"Find out who last edited any file or directory in a Git repository
 
 SMART PATH RESOLUTION:
-  wer automatically finds files and directories by name:
-  • Type just the filename: "wer main.rs" finds src/main.rs
-  • Type directory name: "wer src/" works from anywhere
+  wer automatically finds files and directories by name and intelligently discovers git repositories:
+  • Type just the filename: "wer main.rs" finds src/main.rs in current repo
+  • Type directory name: "wer src/" works from anywhere in current repo
+  • Relative paths: "wer ../other-project/file.rs" finds git repo in ../other-project/
+  • Current directory paths: "wer ./subdir/file.py" stays within current repo
   • Absolute paths: "wer ~/file.txt" or "wer /full/path" used directly
   • Search ignores common directories (.git, node_modules, target, etc.)
+
+CROSS-REPOSITORY SUPPORT:
+  wer can work with files in different git repositories by resolving relative paths:
+  • "../other-repo/file.rs" → discovers git repo at ../other-repo/ 
+  • "../../parent-project/src/" → finds git repo at ../../parent-project/
+  • Each file is processed within its own git repository context
 
 MULTIPLE MATCHES BEHAVIOR:
   When multiple files/directories with the same name are found:
@@ -30,13 +38,14 @@ MODES:
     Only works with files, not directories
 
 EXAMPLES:
-  wer Cargo.toml              Find and show who last edited Cargo.toml
-  wer main.rs                 Find src/main.rs automatically
-  wer src/                    Show who last touched the src/ directory
-  wer -b git.rs               Find and show blame for src/git.rs
-  wer -d .                    Show only the date of last change
-  wer -l 3 src/               Show last 3 contributors to src/ directory
-  wer -b -m file.py           Show blame with commit messages"#
+  wer Cargo.toml                      Find and show who last edited Cargo.toml
+  wer main.rs                         Find src/main.rs automatically
+  wer src/                            Show who last touched the src/ directory
+  wer ../other-project/README.md      Show git info from different repository
+  wer -b git.rs                       Find and show blame for src/git.rs
+  wer -d .                            Show only the date of last change
+  wer -l 3 src/                       Show last 3 contributors to src/ directory
+  wer -b -m ../docs/file.py           Show blame with commit messages from ../docs/ repo"#
 )]
 #[command(arg(clap::Arg::new("version")
     .short('v')
@@ -44,10 +53,13 @@ EXAMPLES:
     .action(clap::ArgAction::Version)
     .help("Print version")))]
 pub struct Cli {
-    /// File or directory path (searches automatically if not found in current directory)
+    /// File or directory path (searches automatically and works across repositories)
     ///
-    /// Can be just a filename (main.rs), directory name (src/), or full path.
-    /// For absolute paths, use ~/file.txt or /full/path to skip search.
+    /// Supports multiple path types:
+    /// • Filename only: "main.rs" (searches recursively in current repo)
+    /// • Relative paths: "../other-repo/file.rs" (discovers appropriate git repo)
+    /// • Directory paths: "./src/" or "../project/docs/"
+    /// • Absolute paths: "~/file.txt" or "/full/path" (used directly)
     pub path: Option<String>,
 
     /// Show git blame with syntax highlighting (files only)
