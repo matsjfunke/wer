@@ -2,23 +2,49 @@ use anyhow::{Result, anyhow};
 use std::fs;
 use std::path::{Path, PathBuf};
 
-/// Search for a file or directory by name starting from the current directory
-/// Returns all matches found, or the original path if it's absolute or starts with ~/
+/// Search for a file or directory by name starting from current directory
+/// Handles different path types:
+/// - ~/path: home directory paths (returned as-is)
+/// - /absolute/path: absolute paths (returned as-is) 
+/// - ../relative/path or ./path or subdir/path: relative paths (checked directly)
+/// - filename: bare filename (searched recursively in current directory)
 pub fn find_all_matches(input: &str) -> Result<Vec<String>> {
+    find_all_matches_from(input, None)
+}
+
+/// Internal function that can optionally specify a base directory (for testing)
+fn find_all_matches_from(input: &str, base_dir: Option<&Path>) -> Result<Vec<String>> {
     // If it's already an absolute path or starts with ~/, return as-is
     if input.starts_with('/') || input.starts_with("~/") {
         return Ok(vec![input.to_string()]);
     }
 
-    // If it exists as a relative path from current directory, use it
-    if Path::new(input).exists() {
+    let current_dir = match base_dir {
+        Some(dir) => dir.to_path_buf(),
+        None => std::env::current_dir()?,
+    };
+
+    // If it contains path separators, treat it as a relative path and check if it exists
+    if input.contains('/') {
+        let path = current_dir.join(input);
+        if path.exists() {
+            return Ok(vec![input.to_string()]);
+        } else {
+            return Err(anyhow!(
+                "Path '{}' not found",
+                input
+            ));
+        }
+    }
+
+    // If it exists as a file/directory in current directory, use it
+    let direct_path = current_dir.join(input);
+    if direct_path.exists() {
         return Ok(vec![input.to_string()]);
     }
 
-    // Otherwise, search for it recursively starting from current directory
-    let current_dir = std::env::current_dir()?;
+    // Otherwise, it's just a filename - search for it recursively
     let mut matches = Vec::new();
-
     search_recursive(&current_dir, input, &mut matches)?;
 
     if matches.is_empty() {
@@ -28,7 +54,7 @@ pub fn find_all_matches(input: &str) -> Result<Vec<String>> {
         ));
     }
 
-    // Convert all matches to relative paths in one go
+    // Convert all matches to relative paths
     Ok(matches
         .into_iter()
         .map(|path| {
@@ -109,17 +135,9 @@ mod tests {
         let file_path = dir.path().join("testfile.txt");
         File::create(&file_path).unwrap();
 
-        let rel_path = file_path.strip_prefix(dir.path()).unwrap().to_str().unwrap();
-
-        // Change current directory to temp dir for this test
-        let original_dir = std::env::current_dir().unwrap();
-        std::env::set_current_dir(&dir).unwrap();
-
-        let result = find_all_matches(rel_path).unwrap();
+        let rel_path = "testfile.txt";
+        let result = find_all_matches_from(rel_path, Some(dir.path())).unwrap();
         assert_eq!(result, vec![rel_path.to_string()]);
-
-        // Restore original directory
-        std::env::set_current_dir(original_dir).unwrap();
     }
 
     #[test]
@@ -133,28 +151,30 @@ mod tests {
         let mut file = File::create(&target_path).unwrap();
         file.write_all(b"test content").unwrap();
         file.sync_all().unwrap();
+        drop(file); // Explicitly close the file
 
-        // Change current directory to temp dir for this test
-        let original_dir = std::env::current_dir().unwrap();
-        std::env::set_current_dir(&dir).unwrap();
-
-        let matches = find_all_matches(target_file_name).unwrap();
+        let matches = find_all_matches_from(target_file_name, Some(dir.path())).unwrap();
         assert_eq!(matches[0], "nested/targetfile.txt", "Expected match to be 'nested/targetfile.txt', found: '{}'", matches[0]);
+    }
 
-        // Restore original directory
-        std::env::set_current_dir(original_dir).unwrap();
+    #[test]
+    fn test_find_all_matches_relative_path() {
+        let dir = tempdir().unwrap();
+        let nested_dir = dir.path().join("subdir");
+        fs::create_dir(&nested_dir).unwrap();
+        let file_path = nested_dir.join("testfile.txt");
+        File::create(&file_path).unwrap();
+
+        // Test relative path with directory separator
+        let result = find_all_matches_from("subdir/testfile.txt", Some(dir.path())).unwrap();
+        assert_eq!(result, vec!["subdir/testfile.txt".to_string()]);
     }
 
     #[test]
     fn test_find_all_matches_not_found() {
-        // function should return an error if the file is not found.
         let dir = tempdir().unwrap();
 
-        // Change current directory to temp dir for this test
-        let original_dir = std::env::current_dir().unwrap();
-        std::env::set_current_dir(&dir).unwrap();
-
-        let result = find_all_matches("nonexistentfile.txt");
+        let result = find_all_matches_from("nonexistentfile.txt", Some(dir.path()));
         assert!(result.is_err());
 
         // Check that the error matches the expected "file not found" message
@@ -163,9 +183,6 @@ mod tests {
             assert!(error_string.contains("No file or directory named 'nonexistentfile.txt'"), 
             "Error message was: {}", error_string);
         }
-
-        // Restore original directory
-        std::env::set_current_dir(original_dir).unwrap();
     }
 
     #[test]

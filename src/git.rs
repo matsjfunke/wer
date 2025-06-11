@@ -161,7 +161,9 @@ fn validate_git_path(path: &str, must_be_file: bool) -> Result<(Repository, Path
     let full_path = if Path::new(path).is_absolute() {
         PathBuf::from(path)
     } else {
-        std::env::current_dir()?.join(path)
+        // For relative paths, resolve them against current working directory
+        std::env::current_dir()?.join(path).canonicalize()
+            .map_err(|_| anyhow!("Cannot resolve path '{}'. Check if it exists.", path))?
     };
 
     // Check if the path exists
@@ -177,7 +179,7 @@ fn validate_git_path(path: &str, must_be_file: bool) -> Result<(Repository, Path
         ));
     }
 
-    // Find the git repository
+    // Find the git repository for this specific path
     let search_path = if full_path.is_file() {
         full_path.parent().unwrap_or(&full_path).to_path_buf()
     } else {
@@ -185,16 +187,16 @@ fn validate_git_path(path: &str, must_be_file: bool) -> Result<(Repository, Path
     };
 
     let repo = Repository::discover(search_path)
-        .map_err(|_| anyhow!("Not a git repository (or any of the parent directories)"))?;
+        .map_err(|_| anyhow!("Path '{}' is not in a git repository", path))?;
 
-    // Convert path to relative path from repo root
+    // Convert path to relative path from the discovered repo root
     let repo_workdir = repo
         .workdir()
         .ok_or_else(|| anyhow!("Repository has no working directory"))?;
 
     let relative_path = full_path
         .strip_prefix(repo_workdir)
-        .map_err(|_| anyhow!("Path '{}' is not within the repository", path))?
+        .map_err(|_| anyhow!("Path '{}' is not within the repository at '{}'", path, repo_workdir.display()))?
         .to_path_buf();
 
     Ok((repo, full_path, relative_path))
