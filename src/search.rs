@@ -79,3 +79,108 @@ fn is_ignored_directory(name: &str) -> bool {
             | "__pycache__"
     ) || name.starts_with('.')
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::fs::{self, File};
+    use tempfile::tempdir;
+    use std::io::Write;
+
+    #[test]
+    fn test_find_all_matches_absolute_path() {
+        // function should recognize an absolute path and return it directly.
+        let path = "/some/absolute/path";
+        let result = find_all_matches(path).unwrap();
+        assert_eq!(result, vec![path.to_string()]);
+    }
+
+    #[test]
+    fn test_find_all_matches_home_tilde() {
+        // function should recognize a home path and return it directly.
+        let input = "~/myfile.txt";
+        let result = find_all_matches(input).unwrap();
+        assert_eq!(result, vec![input.to_string()]);
+    }
+
+    #[test]
+    fn test_find_all_matches_existing_relative_file() {
+        let dir = tempdir().unwrap();
+        let file_path = dir.path().join("testfile.txt");
+        File::create(&file_path).unwrap();
+
+        let rel_path = file_path.strip_prefix(dir.path()).unwrap().to_str().unwrap();
+
+        // Change current directory to temp dir for this test
+        let original_dir = std::env::current_dir().unwrap();
+        std::env::set_current_dir(&dir).unwrap();
+
+        let result = find_all_matches(rel_path).unwrap();
+        assert_eq!(result, vec![rel_path.to_string()]);
+
+        // Restore original directory
+        std::env::set_current_dir(original_dir).unwrap();
+    }
+
+    #[test]
+    fn test_find_all_matches_recursive_search() {
+        let dir = tempdir().unwrap();
+        let nested_dir = dir.path().join("nested");
+        fs::create_dir(&nested_dir).unwrap();
+
+        let target_file_name = "targetfile.txt";
+        let target_path = nested_dir.join(target_file_name);
+        let mut file = File::create(&target_path).unwrap();
+        file.write_all(b"test content").unwrap();
+        file.sync_all().unwrap();
+
+        // Change current directory to temp dir for this test
+        let original_dir = std::env::current_dir().unwrap();
+        std::env::set_current_dir(&dir).unwrap();
+
+        let matches = find_all_matches(target_file_name).unwrap();
+        assert_eq!(matches[0], "nested/targetfile.txt", "Expected match to be 'nested/targetfile.txt', found: '{}'", matches[0]);
+
+        // Restore original directory
+        std::env::set_current_dir(original_dir).unwrap();
+    }
+
+    #[test]
+    fn test_find_all_matches_not_found() {
+        // function should return an error if the file is not found.
+        let dir = tempdir().unwrap();
+
+        // Change current directory to temp dir for this test
+        let original_dir = std::env::current_dir().unwrap();
+        std::env::set_current_dir(&dir).unwrap();
+
+        let result = find_all_matches("nonexistentfile.txt");
+        assert!(result.is_err());
+
+        // Check that the error matches the expected "file not found" message
+        if let Err(e) = result {
+            let error_string = e.to_string();
+            assert!(error_string.contains("No file or directory named 'nonexistentfile.txt'"), 
+            "Error message was: {}", error_string);
+        }
+
+        // Restore original directory
+        std::env::set_current_dir(original_dir).unwrap();
+    }
+
+    #[test]
+    fn test_is_ignored_directory() {
+        assert!(is_ignored_directory(".git"));
+        assert!(is_ignored_directory(".svn"));
+        assert!(is_ignored_directory("node_modules"));
+        assert!(is_ignored_directory("target"));
+        assert!(is_ignored_directory("build"));
+        assert!(is_ignored_directory("dist"));
+        assert!(is_ignored_directory("__pycache__"));
+        assert!(is_ignored_directory(".hidden"));
+        assert!(is_ignored_directory(".hg"));
+        assert!(is_ignored_directory(".vscode"));
+        assert!(is_ignored_directory(".idea"));
+        assert!(!is_ignored_directory("some_dir"));
+    }
+}
