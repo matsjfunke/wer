@@ -1,6 +1,6 @@
-[![Tests](https://github.com/matsjfunke/wer/actions/workflows/test.yml/badge.svg)](https://github.com/matsjfunke/wer/actions/workflows/test.yml)
-[![Crates.io](https://img.shields.io/crates/d/wer.svg)](https://crates.io/crates/wer)
 [![Crates.io](https://img.shields.io/crates/v/wer.svg)](https://crates.io/crates/wer)
+[![Tests](https://github.com/matsjfunke/wer/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/matsjfunke/wer/actions/workflows/test.yml)
+[![Crates.io](https://img.shields.io/crates/d/wer.svg)](https://crates.io/crates/wer)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
 
 # ⁉️ wer ⁉️

@@ -162,7 +162,9 @@ fn validate_git_path(path: &str, must_be_file: bool) -> Result<(Repository, Path
         PathBuf::from(path)
     } else {
         // For relative paths, resolve them against current working directory
-        std::env::current_dir()?.join(path).canonicalize()
+        std::env::current_dir()?
+            .join(path)
+            .canonicalize()
             .map_err(|_| anyhow!("Cannot resolve path '{}'. Check if it exists.", path))?
     };
 
@@ -196,7 +198,13 @@ fn validate_git_path(path: &str, must_be_file: bool) -> Result<(Repository, Path
 
     let relative_path = full_path
         .strip_prefix(repo_workdir)
-        .map_err(|_| anyhow!("Path '{}' is not within the repository at '{}'", path, repo_workdir.display()))?
+        .map_err(|_| {
+            anyhow!(
+                "Path '{}' is not within the repository at '{}'",
+                path,
+                repo_workdir.display()
+            )
+        })?
         .to_path_buf();
 
     Ok((repo, full_path, relative_path))

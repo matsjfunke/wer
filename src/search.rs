@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 /// Search for a file or directory by name starting from current directory
 /// Handles different path types:
 /// - ~/path: home directory paths (returned as-is)
-/// - /absolute/path: absolute paths (returned as-is) 
+/// - /absolute/path: absolute paths (returned as-is)
 /// - ../relative/path or ./path or subdir/path: relative paths (checked directly)
 /// - filename: bare filename (searched recursively in current directory)
 pub fn find_all_matches(input: &str) -> Result<Vec<String>> {
@@ -30,10 +30,7 @@ fn find_all_matches_from(input: &str, base_dir: Option<&Path>) -> Result<Vec<Str
         if path.exists() {
             return Ok(vec![input.to_string()]);
         } else {
-            return Err(anyhow!(
-                "Path '{}' not found",
-                input
-            ));
+            return Err(anyhow!("Path '{}' not found", input));
         }
     }
 
@@ -110,8 +107,8 @@ fn is_ignored_directory(name: &str) -> bool {
 mod tests {
     use super::*;
     use std::fs::{self, File};
-    use tempfile::tempdir;
     use std::io::Write;
+    use tempfile::tempdir;
 
     #[test]
     fn test_find_all_matches_absolute_path() {
@@ -154,7 +151,11 @@ mod tests {
         drop(file); // Explicitly close the file
 
         let matches = find_all_matches_from(target_file_name, Some(dir.path())).unwrap();
-        assert_eq!(matches[0], "nested/targetfile.txt", "Expected match to be 'nested/targetfile.txt', found: '{}'", matches[0]);
+        assert_eq!(
+            matches[0], "nested/targetfile.txt",
+            "Expected match to be 'nested/targetfile.txt', found: '{}'",
+            matches[0]
+        );
     }
 
     #[test]
@@ -180,8 +181,11 @@ mod tests {
         // Check that the error matches the expected "file not found" message
         if let Err(e) = result {
             let error_string = e.to_string();
-            assert!(error_string.contains("No file or directory named 'nonexistentfile.txt'"), 
-            "Error message was: {}", error_string);
+            assert!(
+                error_string.contains("No file or directory named 'nonexistentfile.txt'"),
+                "Error message was: {}",
+                error_string
+            );
         }
     }
 
