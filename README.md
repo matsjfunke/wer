@@ -1,3 +1,8 @@
+[![Crates.io](https://img.shields.io/crates/v/wer.svg)](https://crates.io/crates/wer)
+[![Tests](https://github.com/matsjfunke/wer/actions/workflows/test.yml/badge.svg?branch=main)](https://github.com/matsjfunke/wer/actions/workflows/test.yml)
+[![Crates.io](https://img.shields.io/crates/d/wer.svg)](https://crates.io/crates/wer)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE.md)
+
 # ⁉️ wer ⁉️
 
 `wer` (German "who") is a command-line tool for answering that everyday question:
@@ -74,7 +79,7 @@ cargo install --path .
 
 ### ✨ Smart Path Resolution
 
-`wer` automatically finds files and directories by name - no need to remember exact paths!
+`wer` automatically finds files and directories by name and intelligently handles different path types:
 
 ```bash
 # Just type the filename - wer finds it automatically
@@ -83,6 +88,10 @@ wer Cargo.toml             # Finds ./Cargo.toml
 
 # Works with directories too
 wer src/                   # Works from anywhere in the repository
+
+# Relative paths work across repositories
+wer ../other-project/file.rs    # Finds the git repo in ../other-project/
+wer ./subdir/file.py           # Within current repository
 
 # For absolute paths, use full paths to skip search
 wer ~/Documents/file.txt   # Uses absolute path directly
@@ -97,6 +106,16 @@ wer config.toml
 # → a1b2c3d Jane Doe - 05 Jun 2025: Add test config
 ```
 
+**Path Types Supported:**
+
+| Path Type                    | Example                    | Behavior                                     |
+| ---------------------------- | -------------------------- | -------------------------------------------- |
+| **Filename**                 | `main.rs`                  | Searches recursively in current directory    |
+| **Relative in current repo** | `./src/main.rs`            | Checks path directly in current repository   |
+| **Relative outside repo**    | `../other-project/file.rs` | Resolves path and finds appropriate git repo |
+| **Absolute path**            | `/full/path/to/file`       | Uses path directly                           |
+| **Home directory**           | `~/Documents/file.txt`     | Expands tilde and uses directly              |
+
 ### 🎮 Basic Usage
 
 ```bash
@@ -107,6 +126,10 @@ wer Cargo.toml
 # Check who last edited a directory
 wer src/
 # → 61fcdda Mats Julius Funke - 07 Jun 2025: Added new module
+
+# Check files in other repositories using relative paths
+wer ../other-project/README.md
+# → a1b2c3d Jane Doe - 05 Jun 2025: Update documentation
 
 # Check current directory
 wer

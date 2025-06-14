@@ -13,3 +13,22 @@ pub fn format_timestamp_day_month_year(timestamp: i64) -> String {
 
     dt.format("%d %b %Y").to_string()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_format_timestamp_day_month() {
+        let timestamp = 1749456964;
+        let result = format_timestamp_day_month(timestamp);
+        assert_eq!(result, "09 Jun");
+    }
+
+    #[test]
+    fn test_format_timestamp_day_month_year() {
+        let timestamp = 1749456964;
+        let result = format_timestamp_day_month_year(timestamp);
+        assert_eq!(result, "09 Jun 2025");
+    }
+}
