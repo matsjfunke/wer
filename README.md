@@ -124,7 +124,7 @@ wer Cargo.toml
 # → 61fcdda Mats Julius Funke - 07 Jun 2025: Initial commit
 
 # Check who last edited a directory
-wer src/
+wer src
 # → 61fcdda Mats Julius Funke - 07 Jun 2025: Added new module
 
 # Check files in other repositories using relative paths
